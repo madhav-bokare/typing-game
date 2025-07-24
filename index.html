@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Hero: Speed Master</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .word {
+      position: absolute;
+      font-size: 24px;
+      color: lime;
+      font-weight: bold;
+    }
+
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+
+    input {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px;
+      font-size: 20px;
+      width: 300px;
+      border: 2px solid lime;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    #gameOver {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="ui">
+      ❤️ Health: <span id="health">100</span> |
+      🎯 Score: <span id="score">0</span>
+    </div>
+    <div id="gameOver">🛑 Game Over! Reload to play again.</div>
+    <input type="text" id="input" autofocus placeholder="Type here..." />
+  </div>
+
+  <script>
+    const words = [  "attack", "hero",  "keyboard", "enemy", "fast", "fire", "sword", "magic", "speed",
+     "power", "focus", "ghost", "ninja", "master", "strike", "jump", "blast", "zero" ];
+
+    const game = document.getElementById("game");
+    const input = document.getElementById("input");
+    const scoreEl = document.getElementById("score");
+    const healthEl = document.getElementById("health");
+    const gameOverEl = document.getElementById("gameOver");
+    let activeWords = [];
+    let score = 0;
+    let health = 100;
+    let wordSpeed = .5;
+
+    function createWord() {
+      const wordText = words[Math.floor(Math.random() * words.length)];
+      const word = document.createElement("div");
+      word.classList.add("word");
+      word.innerText = wordText;
+      word.style.left = Math.random() * (window.innerWidth - 100) + "px";
+      word.style.top = "0px";
+      game.appendChild(word);
+
+      activeWords.push({ el: word, text: wordText, y: 0 });
+    }
+
+    function updateWords() {
+      activeWords.forEach((wordObj, index) => {
+        wordObj.y += wordSpeed;
+        wordObj.el.style.top = wordObj.y + "px";
+
+        // If word reaches bottom
+        if (wordObj.y > window.innerHeight - 60) {
+          game.removeChild(wordObj.el);
+          activeWords.splice(index, 1);
+          health -= 10;
+          healthEl.innerText = health;
+
+          if (health <= 0) {
+            endGame();
+          }
+        }
+      });
+    }
+
+    function endGame() {
+      clearInterval(spawnInterval);
+      clearInterval(updateInterval);
+      gameOverEl.style.display = "block";
+      input.disabled = true;
+    }
+
+    input.addEventListener("input", () => {
+      const typed = input.value.trim().toLowerCase();
+      const matchIndex = activeWords.findIndex(w => w.text.toLowerCase() === typed);
+
+      if (matchIndex !== -1) {
+        // Word matched
+        game.removeChild(activeWords[matchIndex].el);
+        activeWords.splice(matchIndex, 1);
+        score += 10;
+        wordSpeed += 0.1; // Increase difficulty
+        scoreEl.innerText = score;
+        input.value = "";
+      }
+    });
+
+    // Intervals
+    const spawnInterval = setInterval(createWord, 2500);
+    const updateInterval = setInterval(updateWords, 30);
+  </script>
+</body>
+</html>
